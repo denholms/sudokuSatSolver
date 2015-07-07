@@ -1,5 +1,5 @@
 from subprocess import call
-import sys, getopt
+import sys, getopt, math
 
 # call(["minisat", "arg", "arg"])
 # minimalSolver.py -i inputfile -o outputfile -n number
@@ -8,7 +8,7 @@ import sys, getopt
 # Every column contains the number once
 # Every number appears once in every grid
 
-N = 3
+N = 9
 
 def read (file):
 	f = open(file, "r")
@@ -16,7 +16,18 @@ def read (file):
 	while (buff != ''):
 		string += buff
 		buff = f.readline()
+	f.close()
 	return string
+
+def write (file, solution):
+	f = open(file, "rw+")
+	for i in range(N):
+		for j in range(N):
+			f.write(solution[i][j])
+			f.write(" ")
+		f.write("\n")
+	f.close()
+
 
 def parse(string):
 	string.replace("\n", "").replace("*", "-1").replace(".", "-1")
@@ -26,8 +37,8 @@ def parse(string):
 	if (string.len != (N * N)):
 		print "invalid table"
 		sys.exit(2)
-	for i in range(0, N):
-		for j in range(0, N):
+	for i in range(N):
+		for j in range(N):
 			puzzle[i][j] = int(string[counter])
 
 	return puzzle
