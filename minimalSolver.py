@@ -18,31 +18,47 @@ def read (file):
 		buff = f.readline()
 	return string
 
+def parse(string):
+	string.replace("\n", "").replace("*", "-1").replace(".", "-1")
+	
+	counter = 0
+	puzzle = [[0 for x in range (N)] for x in range (N)]
+	if (string.len != (N * N)):
+		print "invalid table"
+		sys.exit(2)
+	for i in range(0, N):
+		for j in range(0, N):
+			puzzle[i][j] = int(string[counter])
+
+	return puzzle
 
 
 def main(argv):
-   inputfile = ''
-   outputfile = ''
-   try:
-      opts, args = getopt.getopt(sys.argv[1:],"hi:o:n:")
-   except getopt.GetoptError:
-   	print 'minimalSolver.py -i <inputfile> -o <outputfile> -n <number of rows/cols>'
-   	sys.exit(2)
-   for option, arg in opts:
-   	if option in ("-i"):
-   		inputfile = arg
-   	elif option in ("-o"):
-   		outputfile = arg
-    elif option in ("-n"):
-      	N = int(arg)
+	inputfile = ''
+	outputfile = ''
+	try:
+		opts, args = getopt.getopt(sys.argv[1:],"hi:o:n:")
+	except getopt.GetoptError:
+		print 'minimalSolver.py -i <inputfile> -o <outputfile> -n <number of rows>'
+		sys.exit(2)
+	for option, arg in opts:
+		if option in ("-i"):
+			inputfile = arg
+		elif option in ("-o"):
+			outputfile = arg
+		elif option in ("-n"):
+			N = int(arg)
+		elif option in ("-h"):
+			print 'minimalSolver.py -i <inputfile> -o <outputfile> -n <number of rows>'
+			sys.exit(2)    	
 	try:
 		string = read(inputfile)
 	except:
 		print "failed read"
+	
+	parse(string)
 
-
-   print 'Input file is "', inputfile
-   print 'Output file is "', outputfile
+	print 'Output file is "', outputfile
 
 if __name__ == "__main__":
-   main(sys.argv[1:])
+	main(sys.argv[1:])
