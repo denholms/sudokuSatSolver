@@ -30,7 +30,7 @@ def write (file, solution):
 
 
 def parse(string):
-	string.replace("\n", "").replace("*", "-1").replace(".", "-1")
+	string.replace("\n", "").replace("*", "0").replace(".", "0").replace("*", "0").replace("?", "0")
 	
 	counter = 0
 	puzzle = [[0 for x in range (N)] for x in range (N)]
