@@ -1,12 +1,8 @@
 from subprocess import call
 import sys, getopt, math
 
-# call(["minisat", "arg", "arg"])
 # minimalSolver.py -i inputfile -o outputfile -n number
 
-# Every row contains the number once
-# Every column contains the number once
-# Every number appears once in every grid
 
 N = 0
 C = 0
@@ -34,23 +30,24 @@ def write ():
 
 
 def parse(string):
-	string = string.replace("\n", "").replace("*", "0").replace(".", "0").replace("*", "0").replace("?", "0")
+	global puzzle
+	string = string.replace("\n", "").replace("*", "0").replace(".", "0").replace("?", "0")
 	counter = 0
 	puzzle = [[0 for x in range (N)] for x in range (N)]
 	if (len(string) != (N * N)):
 		print "invalid table"
 		sys.exit(2)
-	for i in range(N):
-		for j in range(N):
-			puzzle[i][j] = int(string[counter])
+	for row in range(N):
+		for column in range(N):
+			puzzle[row][column] = int(string[counter])
 			counter += 1
-
 	return puzzle
 
-def getNumberOfVariables(digit, row, column):
-	return (N * N * row) + (N * column) + digit
+def getNumberOfVariables(value, row, column):
+	return (N * N * row) + (N * column) + value
 
 def eachCell():
+	global solution
 	for row in range (N):
 		for column in range (N):
 			clause = [];
@@ -59,20 +56,23 @@ def eachCell():
 			solution.append(clause)
 
 def oncePerColumn():
+	global solution
 	for col in range (N):
 		for value in range (1, N+1):
 			for row in range (N-1):
-				for nrow in range(row+1):
+				for nrow in range(row+1, N):
 					solution.append([-getNumberOfVariables(value,row,col), -getNumberOfVariables(value, nrow, col)])
 
 def oncePerRow():
+	global solution
 	for row in range (N):
 		for value in range (1, N+1):
 			for column in range (N-1):
-				for ncol in range(column+1):
+				for ncol in range(column+1, N):
 					solution.append([-getNumberOfVariables(value, row, column), -getNumberOfVariables(value, row, ncol)])
 
 def oncePerGrid():
+	global solution
 	for value in range (1, N+1):
 		for xbox in range(C):
 			for ybox in range(C):
@@ -80,26 +80,27 @@ def oncePerGrid():
 					for j in range(C):
 						for k in range(i+1, C):
 							for l in range(C):
-								solution.append([-getNumberOfVariables(value, C * xbox + i, C * ybox + j), -getNumberOfVariables(value, C * xbox + k, C * ybox + l)])
-
-def addFromGrid():
+								solution.append([-getNumberOfVariables(value, (C * xbox) + i, (C * ybox) + j), -getNumberOfVariables(value, (C * xbox) + k, (C * ybox) + l)])
+def addFromPuzzle():
 	global puzzle
+	global solution
 	for row in range(N):
 		for column in range(N):
 			if(puzzle[row][column] > 0):
-				solution.append([getNumberOfVariables(row, column, puzzle[row][column])])
+				solution.append([getNumberOfVariables(puzzle[row][column], row, column)])
 
 def minimalEncoding():
-	addFromGrid()
+	addFromPuzzle()
 	eachCell()
-	oncePerRow()
 	oncePerColumn()
+	oncePerRow()
 	oncePerGrid()
 
 def main(argv):
 	inputfile = ''
 	outputfile = ''
 	global N
+	global C
 	try:
 		opts, args = getopt.getopt(sys.argv[1:],"hi:o:n:")
 	except getopt.GetoptError:
@@ -116,20 +117,21 @@ def main(argv):
 			print 'minimalSolver.py -i <inputfile> -o <outputfile> -n <number of rows>'
 			sys.exit(2)
 	if ((N is 0) or (inputfile is '') or (outputfile is '')):
-		print 'ffminimalSolver.py -i <inputfile> -o <outputfile> -n <number of rows>'
+		print 'minimalSolver.py -i <inputfile> -o <outputfile> -n <number of rows>'
 		sys.exit(2)
 
 	#try:
 	global puzzle
 	string = read(inputfile)
-	C = math.sqrt(N)
+	C = int(math.sqrt(N))
 	puzzle = parse(string)
-	print puzzle
 	minimalEncoding()
 	write() #write to intermediate file for miniSAT reading
-	#call(["miniSAT", "mid.txt", outputfile]) #assuming this is how the minisat accepts things.
 
-	#except:
+	#call(["miniSAT", "mid.txt", outputfile]) #assuming this is how the minisat accepts things.
+	# ^^ we may need to adjust our write function to accomodate the minisat
+
+	#except: #this is commented for now for development purposes
 	#	print "failed read. for help use -h option"
 
 if __name__ == "__main__":
