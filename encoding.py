@@ -89,6 +89,50 @@ def addFromPuzzle():
 			if(puzzle[row][column] > 0):
 				solution.append([getNumberOfVariables(puzzle[row][column], row, column)])
 
+#one number per cell
+def checkCells():
+	for row in range(N):
+		for column in range(N):
+			for i in range(1, N):
+				for j in range(i+1, N+1):
+					solution.append([-getNumberOfVariables(i, row, column), -getNumberOfVariables(j, row, column)])
+
+
+#one number per row
+def checkRows():
+	for i in range(1, N+1):
+		for column in range(N):
+			vals = []
+			for row in range(N):
+				vals.append(getNumberOfVariables(i, row, column))
+			solution.append(vals);
+
+#one number per col
+def checkCols():
+	for i in range(1, N+1):
+		for row in range(N):
+			vals = []
+			for column in range(N):
+				vals.append(getNumberOfVariables(i, row, column))
+			solution.append(vals);
+
+#one number per grid
+def checkGrids():
+	for gridRow in range(C):
+		for gridColumn in range(C):
+			for i in range(1, N+1):
+				vals = []
+				for j in range(C):
+					for k in range(C):
+						vals.append(getNumberOfVariables(i, j + (C * gridRow), k + (C * gridColumn)))
+				solution.append(vals)
+
+def extendedEncoding():
+	checkCells()
+	checkRows()
+	checkCols()
+	checkGrids()
+
 def minimalEncoding():
 	addFromPuzzle()
 	eachCell()
@@ -99,12 +143,14 @@ def minimalEncoding():
 def main(argv):
 	inputfile = ''
 	outputfile = ''
+	extended = False
 	global N
 	global C
 	try:
-		opts, args = getopt.getopt(sys.argv[1:],"hi:o:n:")
+		opts, args = getopt.getopt(sys.argv[1:],"ehi:o:n:")
 	except getopt.GetoptError:
-		print 'minimalSolver.py -i <inputfile> -o <outputfile> -n <number of rows>'
+		print 'usage: python encoding.py -i <inputfile> -o <outputfile> -n <number of rows> -e (for extended encoding)'
+		print getopt.GetoptError
 		sys.exit(2)
 	for option, arg in opts:
 		if option in ("-i"):
@@ -113,11 +159,13 @@ def main(argv):
 			outputfile = arg
 		elif option in ("-n"):
 			N = int(arg)
+		elif option in ("-e"):
+			extended = True
 		elif option in ("-h"):
-			print 'minimalSolver.py -i <inputfile> -o <outputfile> -n <number of rows>'
+			print 'usage: python encoding.py -i <inputfile> -o <outputfile> -n <number of rows> -e (for extended encoding)'
 			sys.exit(2)
 	if ((N is 0) or (inputfile is '') or (outputfile is '')):
-		print 'minimalSolver.py -i <inputfile> -o <outputfile> -n <number of rows>'
+		print 'usage: python encoding.py -i <inputfile> -o <outputfile> -n <number of rows> -e (for extended encoding)'
 		sys.exit(2)
 
 	#try:
@@ -126,6 +174,8 @@ def main(argv):
 	C = int(math.sqrt(N))
 	puzzle = parse(string)
 	minimalEncoding()
+	if(extended == True):
+		extendedEncoding()
 	write() #write to intermediate file for miniSAT reading
 
 	#call(["miniSAT", "mid.txt", outputfile]) #assuming this is how the minisat accepts things.
