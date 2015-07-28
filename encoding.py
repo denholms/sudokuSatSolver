@@ -3,9 +3,9 @@ import sys, getopt, math
 
 # minimalSolver.py -i inputfile -o outputfile -n number
 
-
 N = 0
 C = 0
+clause_count = 0
 solution = []
 puzzle = []
 
@@ -20,8 +20,10 @@ def read (file):
 	return string
 
 def write ():
-	f = open("mid.txt", "r+b")
+	f = open("mid.txt", "wb")
 	global solution
+	global clause_count
+	f.write("p cnf " + str(N) + " " + str(clause_count) + "\n")
 	for cell in solution:
 		for i in cell:
 			f.write(str(i) + " ")
@@ -34,7 +36,7 @@ def parse(string):
 	string = string.replace("\n", "").replace("*", "0").replace(".", "0").replace("?", "0")
 	counter = 0
 	puzzle = [[0 for x in range (N)] for x in range (N)]
-	if (len(string) != (N * N)):
+	if (len(string) != (N * N) or N < 1):
 		print "invalid table"
 		sys.exit(2)
 	for row in range(N):
@@ -48,31 +50,40 @@ def getNumberOfVariables(value, row, column):
 
 def eachCell():
 	global solution
+	global clause_count
 	for row in range (N):
 		for column in range (N):
 			clause = [];
 			for value in range (1, N+1):
 				clause.append(getNumberOfVariables(value, row, column))
 			solution.append(clause)
+			clause_count += 1
+
 
 def oncePerColumn():
 	global solution
+	global clause_count
 	for col in range (N):
 		for value in range (1, N+1):
 			for row in range (N-1):
 				for nrow in range(row+1, N):
 					solution.append([-getNumberOfVariables(value,row,col), -getNumberOfVariables(value, nrow, col)])
+					clause_count += 1
 
 def oncePerRow():
 	global solution
+	global clause_count
 	for row in range (N):
 		for value in range (1, N+1):
 			for column in range (N-1):
 				for ncol in range(column+1, N):
 					solution.append([-getNumberOfVariables(value, row, column), -getNumberOfVariables(value, row, ncol)])
+					clause_count += 1
+
 
 def oncePerGrid():
 	global solution
+	global clause_count
 	for value in range (1, N+1):
 		for xbox in range(C):
 			for ybox in range(C):
@@ -81,43 +92,57 @@ def oncePerGrid():
 						for k in range(i+1, C):
 							for l in range(C):
 								solution.append([-getNumberOfVariables(value, (C * xbox) + i, (C * ybox) + j), -getNumberOfVariables(value, (C * xbox) + k, (C * ybox) + l)])
+				        clause_count += 1
+
 def addFromPuzzle():
 	global puzzle
 	global solution
+	global clause_count
 	for row in range(N):
 		for column in range(N):
 			if(puzzle[row][column] > 0):
 				solution.append([getNumberOfVariables(puzzle[row][column], row, column)])
+				clause_count += 1
+
 
 #one number per cell
 def checkCells():
+	global clause_count
 	for row in range(N):
 		for column in range(N):
 			for i in range(1, N):
 				for j in range(i+1, N+1):
 					solution.append([-getNumberOfVariables(i, row, column), -getNumberOfVariables(j, row, column)])
+					clause_count += 1
+
 
 
 #one number per row
 def checkRows():
+	global clause_count
 	for i in range(1, N+1):
 		for column in range(N):
 			vals = []
 			for row in range(N):
 				vals.append(getNumberOfVariables(i, row, column))
 			solution.append(vals);
+			clause_count += 1
 
 #one number per col
 def checkCols():
+	global clause_count
 	for i in range(1, N+1):
 		for row in range(N):
 			vals = []
 			for column in range(N):
 				vals.append(getNumberOfVariables(i, row, column))
 			solution.append(vals);
+			clause_count += 1
+
 
 #one number per grid
 def checkGrids():
+	global clause_count
 	for gridRow in range(C):
 		for gridColumn in range(C):
 			for i in range(1, N+1):
@@ -126,6 +151,8 @@ def checkGrids():
 					for k in range(C):
 						vals.append(getNumberOfVariables(i, j + (C * gridRow), k + (C * gridColumn)))
 				solution.append(vals)
+				clause_count += 1
+
 
 def extendedEncoding():
 	checkCells()
@@ -146,10 +173,11 @@ def main(argv):
 	extended = False
 	global N
 	global C
+	global clause_count
 	try:
-		opts, args = getopt.getopt(sys.argv[1:],"ehi:o:n:")
+		opts, args = getopt.getopt(sys.argv[1:],"ehi:o:p:n:")
 	except getopt.GetoptError:
-		print 'usage: python encoding.py -i <inputfile> -o <outputfile> -n <number of rows> -e (for extended encoding)'
+		print 'usage: python encoding.py -i <inputfile> -o <outputfile> -n <number of rows> -p <path to minisat executable> -e (for extended encoding)'
 		print getopt.GetoptError
 		sys.exit(2)
 	for option, arg in opts:
@@ -161,11 +189,13 @@ def main(argv):
 			N = int(arg)
 		elif option in ("-e"):
 			extended = True
+		elif option in ("-p"):
+			minisat_path = arg
 		elif option in ("-h"):
-			print 'usage: python encoding.py -i <inputfile> -o <outputfile> -n <number of rows> -e (for extended encoding)'
+			print 'usage: python encoding.py -i <inputfile> -o <outputfile> -n <number of rows> -p <path to minisat executable> -e (for extended encoding)'
 			sys.exit(2)
 	if ((N is 0) or (inputfile is '') or (outputfile is '')):
-		print 'usage: python encoding.py -i <inputfile> -o <outputfile> -n <number of rows> -e (for extended encoding)'
+		print 'usage: python encoding.py -i <inputfile> -o <outputfile> -n <number of rows> -p <path to minisat executable> -e (for extended encoding)'
 		sys.exit(2)
 
 	#try:
@@ -178,7 +208,7 @@ def main(argv):
 		extendedEncoding()
 	write() #write to intermediate file for miniSAT reading
 
-	#call(["miniSAT", "mid.txt", outputfile]) #assuming this is how the minisat accepts things.
+	call([minisat_path, "mid.txt", outputfile]) #assuming this is how the minisat accepts things.
 	# ^^ we may need to adjust our write function to accomodate the minisat
 
 	#except: #this is commented for now for development purposes
