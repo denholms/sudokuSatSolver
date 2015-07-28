@@ -23,7 +23,7 @@ def write ():
 	f = open("mid.txt", "wb")
 	global solution
 	global clause_count
-	f.write("p cnf " + str(N) + " " + str(clause_count) + "\n")
+	f.write("p cnf " + str(getNumberOfVariables(N-1, N-1, N-1) + 1) + " " + str(clause_count) + "\n")
 	for cell in solution:
 		for i in cell:
 			f.write(str(i) + " ")
@@ -173,7 +173,7 @@ def main(argv):
 	extended = False
 	global N
 	global C
-	global clause_count
+
 	try:
 		opts, args = getopt.getopt(sys.argv[1:],"ehi:o:p:n:")
 	except getopt.GetoptError:
