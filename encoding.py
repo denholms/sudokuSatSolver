@@ -1,7 +1,7 @@
 from subprocess import call
-import sys, getopt, math
+import sys, getopt, math, pprint
 
-# minimalSolver.py -i inputfile -o outputfile -n number
+# encoding.py -i inputfile -o outputfile -n number
 
 N = 0
 C = 0
@@ -145,6 +145,13 @@ def decodeSAT(output):
 					print(sol),
 		print("\n")			
 
+def printPuzzle(puzzle):
+	print("\nUnsolved puzzle:\n")
+	for i in range(N):
+		for j in range(N):
+			print(str(puzzle[i][j]).replace("0", ".")),
+		print("\n")
+
 def extendedEncoding():
 	checkCells()
 	checkRows()
@@ -207,6 +214,7 @@ def main(argv):
 	output = read(outputfile)
 	if (output[0:3] == "SAT"):
 		output_list = output[3:-1].split()
+		printPuzzle(puzzle)
 		decodeSAT(output_list)
 
 if __name__ == "__main__":
