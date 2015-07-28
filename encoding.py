@@ -134,6 +134,17 @@ def checkGrids():
 						vals.append(getNumberOfVariables(i, j + (C * gridRow), k + (C * gridColumn)))
 				solution.append(vals)
 
+def decodeSAT(output):
+	print("\nSolved puzzle:\n")
+	for i in range(N):
+		for j in range(N):
+			for k in range(1, N + 1):
+				val = output[(N * N * i) + (N * j) + k - 1]
+				if (int(val) > 0):
+					sol = int(val) - (N * N * i) - (N * j)
+					print(sol),
+		print("\n")			
+
 def extendedEncoding():
 	checkCells()
 	checkRows()
@@ -190,9 +201,13 @@ def main(argv):
 
 	call([minisat_path, "mid.txt", outputfile]) #assuming this is how the minisat accepts things.
 	# ^^ we may need to adjust our write function to accomodate the minisat
-
 	#except: #this is commented for now for development purposes
 	#	print "failed read. for help use -h option"
+
+	output = read(outputfile)
+	if (output[0:3] == "SAT"):
+		output_list = output[3:-1].split()
+		decodeSAT(output_list)
 
 if __name__ == "__main__":
 	main(sys.argv[1:])
