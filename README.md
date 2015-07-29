@@ -16,5 +16,5 @@ Encoding options are restricted: '-e' for extended encoding.
 -n : Number of rows / columns (for an 9x9 puzzle, n would be 9)  
 
 ## contents:
-encoding.py - The program itself
+encoding.py - The program itself  
 minisat.tar.gz - The compressed minisat
