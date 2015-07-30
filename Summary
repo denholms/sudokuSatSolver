@@ -1,0 +1,4 @@
+For our SAT solver we built a program capable of processing both minimal and extended encodings.
+Our input file (an unsolved puzzle) is first encoded and then fed to the miniSAT executable at the path specified.
+The output of the SAT solver is then interpretted and the solution within is pretty printed to the output.
+The minimal encoding is done by default, but an extended encoding can be done by providing the -e parameter to the program.
