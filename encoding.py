@@ -135,6 +135,7 @@ def checkGrids():
 				solution.append(vals)
 
 def decodeSAT(output):
+	global C
 	print("\nSolved puzzle:\n")
 	for i in range(N):
 		for j in range(N):
@@ -143,8 +144,13 @@ def decodeSAT(output):
 				if (int(val) > 0):
 					sol = int(val) - (N * N * i) - (N * j)
 					print(sol),
-		print("\n")			
-
+			if ((j+1)%C == 0 and (j<N-1)):
+				print("|"),
+		print('\n')
+		if((i+1)%C == 0 and (i<N-1)):
+			for i in range(N+1+(N%2)):
+				print("-"),			
+			print('\n')
 def printPuzzle(puzzle):
 	print("\nUnsolved puzzle:\n")
 	for i in range(N):
